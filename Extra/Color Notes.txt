@@ -1,0 +1,48 @@
+led changer psuedo code
+
+main()
+
+create boxes on right hand side
+
+listen for user click
+if click on red box
+color var = 1
+if click on blue box
+colorvar = 2
+if click on daylight
+colorvar = 10
+
+if colorvar = 1
+set color to red
+if colorvar = 2
+set color to blue
+
+if colorvar = 10
+	get time
+	if time = 10 && hour < 10
+	set color to yellow
+	set hour to 10
+	if time = noon && hour < 12
+	set color to purple
+	set hour to 12
+	etc
+
+
+//all color changes should happen using fade modules
+
+fastFade(rpin,bpin,gpin, brightness)
+{
+while !(redpin == rpin, bluepin == bpin, greenpin == gpin)
+{
+	if redpin < rpin
+		redpin ++;
+	if redpin > rpin 
+		redpin--;
+	if bluepin < bpin
+		bluepin ++
+	..
+	..
+
+	time.sleep (0.1)
+}
+}

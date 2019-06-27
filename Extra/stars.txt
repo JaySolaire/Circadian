@@ -1,0 +1,11 @@
+300 long  x 450 tall
+
+daylight is 300 long by 39 tall
+
+new stars is 48 x 40
+so new daylight is 252 x 40
+
+so i guess ill be using sun 200 x 40 and stars 48 x 40
+
+
+idea size of stars would be 90 wide and 48 tall

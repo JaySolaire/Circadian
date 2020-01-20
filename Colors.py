@@ -40,9 +40,9 @@ def Circadian(rpi, bpi, gpi, stars):
 				return 0
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				msPos = pygame.mouse.get_pos()
-				if !(r11box.collidepoint(msPos) || r12box.collidepoint(msPos)):
-				print("out of Circadian")
-			 	return 2
+				if not (r11box.collidepoint(msPos) or r12box.collidepoint(msPos)):
+					print("out of Circadian")
+					return 2
 		currentTime = datetime.datetime.now()
 		if (currentTime.hour > hour):
 			print("Hour Change!")

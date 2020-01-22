@@ -5,297 +5,228 @@ import datetime
 pygame.init()
 pi= pigpio.pi()
 
-		
-		
-def Fade(red, blue, green, rpi, bpi, gpi, speed):
-	while (rpi != red or bpi != blue or gpi != green):
-		if rpi < red:
-			rpi+=1
-		if rpi > red:
-			rpi -=1
-		if bpi < blue:
-			bpi+=1
-		if bpi > blue:
-			bpi-=1
-		if gpi < green:
-			gpi+=1
-		if gpi > green:
-			gpi-=1
-		pi.set_PWM_dutycycle(17, rpi)
-		pi.set_PWM_dutycycle(24, bpi)		
-		pi.set_PWM_dutycycle(22, gpi)
-		time.sleep(speed)
-#		print("red =",rpi)
-#	print("done")
+class LightValue:
 
-def Circadian(rpi, bpi, gpi, stars):
-	#gameActive = 1
-	hour = 0
-	while (1):
-		print("Circadian loop start")
-		evList = pygame.event.get()
-		for event in evList:
-			if event.type == pygame.QUIT:
-				print("out of Circadian, Quit")
-				return 0
-			if event.type == pygame.MOUSEBUTTONDOWN:
-				msPos = pygame.mouse.get_pos()
-				if not (r11box.collidepoint(msPos) or r12box.collidepoint(msPos)):
-					print("out of Circadian")
-					return 2
-		currentTime = datetime.datetime.now()
-		if (currentTime.hour > hour):
-			print("Hour Change!")
-			hour += 1
-			if currentTime.hour < 8:
-				if stars == 0:
-					red = 0;
-					blue = 0;
-					green = 0;
-				else:
-					red = 10;
-					blue = 20;
-					green = 10;
-			elif currentTime.hour == 8:
-				red = 200
-				blue = 0
-				green = 24
-			elif currentTime.hour == 9:
-				red = 255
-				blue = 8
-				green = 64
-			elif currentTime.hour == 10:
-				red = 255
-				blue = 32
-				green = 96
-			elif currentTime.hour == 11:
-				red = 255
-				blue = 64
-				green = 128
-			elif currentTime.hour == 12:
-				red = 255
-				blue = 150
-				green = 200
-			elif currentTime.hour == 13:
-				red = 255
-				blue = 255
-				green = 255
-			elif currentTime.hour == 14:
-				red = 255
-				blue = 220
-				green = 255
-			elif currentTime.hour == 15:
-				red = 220
-				blue = 200
-				green = 255
-			elif currentTime.hour == 16:
-				red = 200
-				blue = 200
-				green = 255
-			elif currentTime.hour == 17:
-				red = 200
-				blue = 200
-				green = 255
-			elif currentTime.hour == 18:
-				red = 160
-				blue = 200
-				green = 255
-			elif currentTime.hour == 19:
-				red = 40
-				blue = 255
-				green = 255
-			elif currentTime.hour == 20:
-				red = 20
-				blue = 255
-				green = 255
-			elif currentTime.hour == 21:
-				red = 128
-				blue = 255
-				green = 128
-			elif currentTime.hour == 22:
-			
-				red = 196
-				blue = 255
-				green = 128
-			elif currentTime.hour == 23:
-				red = 255
-				blue = 255
-				green = 0
-			Fade(red, blue, green, rpi, bpi, gpi, 0.05)
-			rpi = red
-			bpi = blue
-			gpi = green
-		elif currentTime.hour < hour:
-			hour = 0
-		
+    def __init__(self,x):
+        self.__x = x
 
+    def get(self):
+        return self.__x
 
+    def set(self, x):
+        self.__x = x
+        
+def ChangeLight(currentLight, ideal):
+    if currentLight.get() < ideal.get():
+        currentLight.set(currentLight.get() +1)
+    if currentLight.get() > ideal.get():
+        currentLight.set(currentLight.get() -1)
+        
+def SetRGBValues(red, green, blue, rval, gval, bval):
+    red.set(rval)
+    green.set(gval)
+    blue.set(bval)
+        
 
-##DECLARING VARIABLES//////////////////////////////////////////////
+def Fade(red, green, blue, rpi, gpi, bpi, speed):
+    while (rpi.get() != red.get() or gpi.get() != green.get() or bpi.get() != blue.get()):
+        ChangeLight(rpi, red)
+        ChangeLight(gpi, green)
+        ChangeLight(bpi, blue)
+        pi.set_PWM_dutycycle(17, rpi.get())
+        pi.set_PWM_dutycycle(22, gpi.get())		
+        pi.set_PWM_dutycycle(24, bpi.get())
+        time.sleep(speed)
+        
+def Circadian(rpi, gpi, bpi, stars):
+    hour = 0
+    while (1):
+        
+        ##Collecting Events, Quit Conditions
+        print("Circadian loop start")
+        evList = pygame.event.get()
+        for event in evList:
+            if event.type == pygame.QUIT:
+                print("out of Circadian, Quit")
+                return 0
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                msPos = pygame.mouse.get_pos()
+                if not (r11box.collidepoint(msPos) or r12box.collidepoint(msPos)):
+                    print("out of Circadian")
+                    return 2
+        ##Collecting Time, Hour Changes
+        currentTime = datetime.datetime.now()
+        if currentTime.hour < hour:
+            hour = 0
+            if stars == 0:
+                SetRGBValues(red, green, blue, 0, 0, 0)
+            else:
+                SetRGBValues(red, green, blue, 10, 10, 20)
+            Fade(red, green, blue, rpi, gpi, bpi, 0.05)
+        if currentTime.hour > hour:
+            print("Hour Change!")
+            hour +=1
+            if currentTime.hour < 8:
+                if stars == 0:
+                    SetRGBValues(red, green, blue, 0, 0, 0)
+                else:
+                    SetRGBValues(red, green, blue, 10, 10, 20) 
+            elif currentTime.hour == 8:
+                SetRGBValues(red, green, blue, 192, 32, 0)
+            elif currentTime.hour == 9:
+                SetRGBValues(red, green, blue, 224, 128, 0)
+            elif currentTime.hour == 10:
+                SetRGBValues(red, green, blue, 255, 192, 128)
+            elif currentTime.hour == 11:
+                SetRGBValues(red, green, blue, 255,224,192)
+            elif currentTime.hour == 12:
+                SetRGBValues(red, green, blue, 255,255,192)
+            elif currentTime.hour == 13:
+                SetRGBValues(red, green, blue, 255,255,255)
+            elif currentTime.hour == 14:
+                SetRGBValues(red, green, blue, 224,255,224)
+            elif currentTime.hour == 15:
+                SetRGBValues(red, green, blue, 192,255,224)
+            elif currentTime.hour == 16:
+                SetRGBValues(red, green, blue, 192,255,255)
+            elif currentTime.hour == 17:
+                SetRGBValues(red, green, blue, 192,240,255)
+            elif currentTime.hour == 18:
+                SetRGBValues(red, green, blue, 224,224,255)
+            elif currentTime.hour == 19:
+                SetRGBValues(red, green, blue, 224,192,255)
+            elif currentTime.hour == 20:
+                SetRGBValues(red, green, blue, 240,192,255)
+            elif currentTime.hour == 21:
+                SetRGBValues(red, green, blue, 240,128,255)
+            elif currentTime.hour == 22:
+                SetRGBValues(red, green, blue, 255,128,255)
+            elif currentTime.hour == 23:
+                SetRGBValues(red, green, blue, 128,0,128)
+            Fade(red, green, blue, rpi, gpi, bpi, 0.05)
+            
+###Main
+
 #window
 gameWindow = pygame.display.set_mode((300,450))
 gameActive = 1;
-#Daylight button and Stars
 daylight = 0
 stars = 0
-#current color values of lights
-rpi = 0
-bpi = 0
-gpi = 0
-#ideal color values of lights 
-red = 0
-blue = 0
-green = 0
 
-##COLOR CHANGERS///////////////////////////////////////////////////
-#red up
-rubox = pygame.draw.rect(gameWindow, (255,50,50), (210, 0, 90, 39))
-#blue up
-bubox = pygame.draw.rect(gameWindow, (50,50,255), (210, 80, 90, 39))
-#green up
-gubox = pygame.draw.rect(gameWindow, (50,255,50), (210, 160, 90, 39))
-#red down
-rdbox = pygame.draw.rect(gameWindow, (153,0,0), (210, 40, 90, 39))
-#blue down
-bdbox = pygame.draw.rect(gameWindow, (0,0,153), (210, 120, 90, 39))
-#green down
-gdbox = pygame.draw.rect(gameWindow, (0,153,0), (210, 200, 90, 39))
+#Light Values (current vs ideal)
+rpi = LightValue(255)
+gpi = LightValue(255)
+bpi = LightValue(255)
+red = LightValue(255)
+green = LightValue(255)
+blue = LightValue(255)
 
-##PRESETS/////////////////////////////(R,G,B) (Xstart,Ystart,Xlen,Ylen)
-#1- RED
-r1box = pygame.draw.rect(gameWindow, (255,0,0), (0, 0, 200, 39))
-#2- ORANGE
-r2box = pygame.draw.rect(gameWindow, (255,128,0), (0, 40, 200, 39))
-#3
-r3box = pygame.draw.rect(gameWindow, (255,255,0), (0, 80, 200, 39))
-#4
-r4box = pygame.draw.rect(gameWindow, (128,255,0), (0, 120, 200, 39))
-#5
-r5box = pygame.draw.rect(gameWindow, (0,255,128), (0, 160, 200, 39))
-#6
-r6box = pygame.draw.rect(gameWindow, (0,255,255), (0, 200, 200, 39))
-#7
-r7box = pygame.draw.rect(gameWindow, (0,128,255), (0, 240, 200, 39))
-#8
-r8box = pygame.draw.rect(gameWindow, (0,0,255), (0, 280, 200, 39))
-#9
-r9box = pygame.draw.rect(gameWindow,  (153,51,255), (0, 320, 200, 39))
-#10
-r10box = pygame.draw.rect(gameWindow, (255,0,255), (0, 360, 200, 39))
-#11-- DAYLIGHT
-r11box = pygame.draw.rect(gameWindow, (51,255,100), (0, 400, 200, 39))
-#12-- STARS
-r12box = pygame.draw.rect(gameWindow, (51,255,100), (210, 400, 100, 39))
+#Defining buttons (R,G,B) (Xstart,Ystart,Xlen,Ylen)
+rubox = pygame.draw.rect(gameWindow, (255,50,50), (210, 0, 90, 39))     #red up
+gubox = pygame.draw.rect(gameWindow, (50,255,50), (210, 160, 90, 39))   #green up
+bubox = pygame.draw.rect(gameWindow, (50,50,255), (210, 80, 90, 39))    #blue up
 
-##BRIGHTNESS/////////////////////////////////////////////////////////
-#white
-wbox = pygame.draw.rect(gameWindow, (255,255,255), (210, 280, 99, 59))
-#black
-bbox = pygame.draw.rect(gameWindow, (10,10,10), (210, 340, 99, 59))
+rdbox = pygame.draw.rect(gameWindow, (153,0,0), (210, 40, 90, 39))      #red down
+gdbox = pygame.draw.rect(gameWindow, (0,153,0), (210, 200, 90, 39))     #green down
+bdbox = pygame.draw.rect(gameWindow, (0,0,153), (210, 120, 90, 39))     #blue down
 
-##IMAGES////////////////////////////////////////////////////////////
+r1box = pygame.draw.rect(gameWindow, (255,0,0), (0, 0, 200, 39))        #red
+r2box = pygame.draw.rect(gameWindow, (255,128,0), (0, 40, 200, 39))     #orange
+r3box = pygame.draw.rect(gameWindow, (255,255,0), (0, 80, 200, 39))     #yellow
+r4box = pygame.draw.rect(gameWindow, (128,255,0), (0, 120, 200, 39))    #green
+r5box = pygame.draw.rect(gameWindow, (0,255,128), (0, 160, 200, 39))    #blueishgreen
+r6box = pygame.draw.rect(gameWindow, (0,255,255), (0, 200, 200, 39))    #bluegreen
+r7box = pygame.draw.rect(gameWindow, (0,128,255), (0, 240, 200, 39))    #mostlyblue
+r8box = pygame.draw.rect(gameWindow, (0,0,255), (0, 280, 200, 39))      #blue
+r9box = pygame.draw.rect(gameWindow, (153,51,255), (0, 320, 200, 39))   #purple
+r10box = pygame.draw.rect(gameWindow, (255,0,255), (0, 360, 200, 39))   #light purple
+
+r11box = pygame.draw.rect(gameWindow, (51,255,100), (0, 400, 200, 39))  #Daylight/Circadian Button
+r12box = pygame.draw.rect(gameWindow, (51,255,100), (210, 400, 100, 39))#Stars button
+
+wbox = pygame.draw.rect(gameWindow, (255,255,255), (210, 280, 99, 59))  #white/increase brightness
+bbox = pygame.draw.rect(gameWindow, (10,10,10), (210, 340, 99, 59))     #black/decrease brightness
+
+#import images
 sun = pygame.image.load("sun.png")
 gameWindow.blit(sun, r11box )
 starspic = pygame.image.load("stars.png")
 gameWindow.blit(starspic, r12box )
 
-##MAIN PROGRAM//////////////////////////////////////////////////////
-pygame.display.update()
+##Main loop
 while(gameActive):
-	evList = pygame.event.get()
-	for event in evList:
-		if event.type == pygame.QUIT:
-			gameActive = 0
-		if event.type == pygame.MOUSEBUTTONUP:
-			msPos = pygame.mouse.get_pos()	
-			daylight = 0
-			if r1box.collidepoint(msPos):
-				red = 255
-				green = 0
-				blue = 0
-			elif r2box.collidepoint(msPos):
-				red = 255
-				green = 128
-				blue = 0
-			elif r3box.collidepoint(msPos):
-				red = 255
-				green = 255
-				blue = 0
-			elif r4box.collidepoint(msPos):
-				red = 128
-				green = 255
-				blue = 0
-			elif r5box.collidepoint(msPos):
-				red = 0
-				green = 255
-				blue = 128
-			elif r6box.collidepoint(msPos):
-				red = 0
-				green = 255
-				blue = 255
-			elif r7box.collidepoint(msPos):
-				red = 0
-				green = 128
-				blue = 255
-			elif r8box.collidepoint(msPos):
-				red = 0
-				green = 0
-				blue = 255
-			elif r9box.collidepoint(msPos):
-				red = 153
-				green = 51
-				blue = 255
-			elif r10box.collidepoint(msPos):
-				red = 255
-				green = 0
-				blue = 255
-			elif r11box.collidepoint(msPos):
-				daylight = 1
-				stars = 0
-			elif r12box.collidepoint(msPos):
-				daylight = 1
-				stars = 1
-			elif wbox.collidepoint(msPos):
-				red = 255
-				blue = 255
-				green = 255
-			elif bbox.collidepoint(msPos):
-				red = 0
-				blue = 0
-				green = 0
-			elif bubox.collidepoint(msPos):
-				blue += 10
-			elif rubox.collidepoint(msPos):
-				red += 10
-			elif gubox.collidepoint(msPos):
-				green += 10
-			elif bdbox.collidepoint(msPos):
-				blue -= 10
-			elif rdbox.collidepoint(msPos):
-				red -= 10
-			elif gdbox.collidepoint(msPos):
-				green -= 10
-		if red > 255:
-			red = 255
-		if blue > 255:
-			blue = 255
-		if green > 255:
-			green = 255
-		if red < 0:
-			red = 0
-		if blue < 0:
-			blue = 0
-		if green < 0:
-			green = 0
-		if daylight == 1:
-			evList = pygame.event.clear()
-			daylight = Circadian(rpi, bpi, gpi, stars) #returns 0 to quit
-			if daylight == 0:
-				gameActive = 0
-		Fade(red, blue, green, rpi, bpi, gpi, 0.01)
-		rpi = red
-		bpi = blue
-		gpi = green		
+    evList = pygame.event.get()
+    for event in evList:
+        if event.type == pygame.QUIT:
+            gameActive = 0
+        if event.type == pygame.MOUSEBUTTONUP:
+            msPos = pygame.mouse.get_pos()	
+            daylight = 0 #pulls out of circadian at every click, but then puts it back in if that was the click
+            if r1box.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 255,0,0)
+            elif r2box.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 255, 128, 0)
+            elif r3box.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 255, 255, 0)
+            elif r4box.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 128, 255,0)
+            elif r5box.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 0,255,128)
+            elif r6box.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 0,255,255)
+            elif r7box.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 0,128,255)
+            elif r8box.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 0,0,255)
+            elif r9box.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 153,51,255)
+            elif r10box.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 255,0,255)
+            elif r11box.collidepoint(msPos):
+                daylight = 1
+                stars = 0
+            elif r12box.collidepoint(msPos):
+                daylight = 1    
+                stars = 1
+                
+            elif wbox.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 255,255,255)
+            elif bbox.collidepoint(msPos):
+                SetRGBValues(red, green, blue, 0,0,0)
+			
+            elif rubox.collidepoint(msPos):
+                red.set(red.get() + 10)	
+            elif gubox.collidepoint(msPos):
+                green.set(green.get() + 10)
+            elif bubox.collidepoint(msPos):
+                blue.set(blue.get() + 10)
+            elif rdbox.collidepoint(msPos):
+                red.set(red.get() - 10) 
+            elif gdbox.collidepoint(msPos):
+                green.set(green.get() - 10)
+            elif bdbox.collidepoint(msPos):
+                    blue.set(blue.get() - 10)
+            if red.get() > 255:
+                red.set(255)
+            if green.get()>255:
+                green.set(255)
+            if blue.get() > 255:
+                blue.set(255)
+            if red.get() < 0:
+                red.set(0)
+            if green.get() < 0:
+                green.set(0)
+            if blue.get() < 0:
+                blue.set(0)
+            if daylight == 1:
+                evList= pygame.event.clear()
+                daylight = Circadian(rpi, gpi, bpi, stars) #returns 0 to quit
+                if daylight == 0:
+                    gameActive = 0
+            Fade(red, green, blue, rpi, gpi, bpi, 0.01)
 pi.stop()
 pygame.quit()
 quit()
+
+
+

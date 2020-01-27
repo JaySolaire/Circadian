@@ -40,6 +40,7 @@ def Fade(red, green, blue, rpi, gpi, bpi, speed):
         
 def Circadian(rpi, gpi, bpi, stars):
     hour = 0
+    evList= pygame.event.clear()
     while (1):
         
         ##Collecting Events, Quit Conditions

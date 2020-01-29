@@ -44,7 +44,7 @@ def Circadian(rpi, gpi, bpi, stars):
     while (1):
         
         ##Collecting Events, Quit Conditions
-        print("Circadian loop start")
+        #print("Circadian loop start")
         evList = pygame.event.get()
         for event in evList:
             if event.type == pygame.QUIT:

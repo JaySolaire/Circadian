@@ -55,6 +55,10 @@ def Circadian(rpi, gpi, bpi, stars):
                 if not (r11box.collidepoint(msPos) or r12box.collidepoint(msPos)):
                     print("out of Circadian")
                     return 2
+                elif r11box.collidepoint(msPos):
+                    stars = 0
+                elif r12box.collidepoint(msPos):  
+                    stars = 1
         ##Collecting Time, Hour Changes
         currentTime = datetime.datetime.now()
         if currentTime.hour < hour:
@@ -228,6 +232,4 @@ while(gameActive):
 pi.stop()
 pygame.quit()
 quit()
-
-
 

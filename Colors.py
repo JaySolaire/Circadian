@@ -2,6 +2,7 @@ import pygame
 import pigpio
 import time
 import datetime
+import random
 pygame.init()
 pi= pigpio.pi()
 
@@ -15,6 +16,7 @@ class LightValue:
 
     def set(self, x):
         self.__x = x
+
         
 def ChangeLight(currentLight, ideal):
     if currentLight.get() < ideal.get():
@@ -22,7 +24,7 @@ def ChangeLight(currentLight, ideal):
     if currentLight.get() > ideal.get():
         currentLight.set(currentLight.get() -1)
         
-def SetRGBValues(red, green, blue, rval, gval, bval):
+def SetRGBValues(red, green, blue, rval, gval, bval): #sets ideal values
     red.set(rval)
     green.set(gval)
     blue.set(bval)
@@ -37,6 +39,30 @@ def Fade(red, green, blue, rpi, gpi, bpi, speed):
         pi.set_PWM_dutycycle(22, gpi.get())		
         pi.set_PWM_dutycycle(24, bpi.get())
         time.sleep(speed)
+
+def PartyLight(rpi, gpi, bpi, speed):
+    while (1):
+        evList = pygame.event.get()
+        for event in evList:
+            if event.type == pygame.QUIT:
+                print("out of the Party, Quit")
+                return 0
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                msPos = pygame.mouse.get_pos()
+                if not (p1box.collidepoint(msPos) or p2box.collidepoint(msPos)):
+                    print("out of the Party :(")
+                    return 2
+                elif p1box.collidepoint(msPos):
+                    speed = 0
+                elif p2box.collidepoint(msPos):  
+                    speed = 0.01
+        red = (random.randint(0,2) * 127)
+        green = (random.randint(0,2) * 127)
+        blue = (random.randint(0,2) * 127)                
+        Fade(red, green, blue, rpi, bpi, gpi, speed)
+
+
+
         
 def Circadian(rpi, gpi, bpi, stars):
     hour = 0
@@ -149,8 +175,12 @@ r10box = pygame.draw.rect(gameWindow, (255,0,255), (0, 360, 200, 39))   #light p
 r11box = pygame.draw.rect(gameWindow, (51,255,100), (0, 400, 200, 39))  #Daylight/Circadian Button
 r12box = pygame.draw.rect(gameWindow, (51,255,100), (210, 400, 100, 39))#Stars button
 
-wbox = pygame.draw.rect(gameWindow, (255,255,255), (210, 280, 99, 59))  #white/increase brightness
-bbox = pygame.draw.rect(gameWindow, (10,10,10), (210, 340, 99, 59))     #black/decrease brightness
+wbox = pygame.draw.rect(gameWindow, (255,255,255), (210, 280, 99, 29))  #white/increase brightness
+bbox = pygame.draw.rect(gameWindow, (10,10,10), (210, 310, 99, 29))     #black/decrease brightness
+
+p1box = pygame.draw.rect(gameWindow, (255,0,235), (210, 340, 99, 29))   #party 1 box
+p2box = pygame.draw.rect(gameWindow, (235,0,255), (210, 370, 99, 29))   #party 2 box
+
 
 #import images
 sun = pygame.image.load("sun.png")
@@ -187,13 +217,19 @@ while(gameActive):
                 SetRGBValues(red, green, blue, 153,51,255)
             elif r10box.collidepoint(msPos):
                 SetRGBValues(red, green, blue, 255,0,255)
+            
             elif r11box.collidepoint(msPos):
                 daylight = 1
                 stars = 0
             elif r12box.collidepoint(msPos):
                 daylight = 1    
                 stars = 1
-                
+    
+            elif p1box.collidepoint(msPos):
+                PartyLight(rpi, bpi, gpi, 0)
+            elif p2box.collidepoint(msPos):
+                PartyLight(rpi, bpi, gpi, 0.01)
+               
             elif wbox.collidepoint(msPos):
                 SetRGBValues(red, green, blue, 255,255,255)
             elif bbox.collidepoint(msPos):

@@ -56,9 +56,9 @@ def PartyLight(rpi, gpi, bpi, speed):
                     speed = 0
                 elif p2box.collidepoint(msPos):  
                     speed = 0.01
-        red = (random.randint(0,2) * 127)
-        green = (random.randint(0,2) * 127)
-        blue = (random.randint(0,2) * 127)                
+        red.set(random.randint(0,2) * 127)
+        green.set(random.randint(0,2) * 127)
+        blue.set(random.randint(0,2) * 127)                
         Fade(red, green, blue, rpi, bpi, gpi, speed)
 
 

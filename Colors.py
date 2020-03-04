@@ -60,7 +60,7 @@ def PartyLight(rpi, gpi, bpi, speed):
         green.set(random.randint(0,2) * 127)
         blue.set(random.randint(0,2) * 127)              
         if (red.get() == 0 and blue.get() == 0 and green.get() ==0):
-            SetRGBValues(255,255,255)
+            SetRGBValues(red, green, blue, 255,255,255)
         Fade(red, green, blue, rpi, bpi, gpi, speed)
         time.sleep(0.2)
 
